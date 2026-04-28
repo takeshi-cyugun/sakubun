@@ -7,17 +7,34 @@ export default function LoginPage() {
   const router = useRouter();
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    router.push("/");
+    setError("");
+
+    const isValidMai = account === "mai" && password === "mai";
+    const isValidPapa = account === "papa" && password === "papa";
+
+    if (isValidMai || isValidPapa) {
+      localStorage.setItem("auth_token", "dummy-session-token");
+      router.push("/");
+    } else {
+      setError("アカウント名またはパスワードが正しくありません。");
+    }
   };
 
   return (
     <main className="min-h-screen bg-stone-100 flex items-center justify-center p-4">
       <section className="w-full max-w-sm bg-white rounded-xl shadow-md border border-stone-200 p-6">
-        <h1 className="text-lg font-bold text-green-800 mb-5">あゆみノート ログイン</h1>
+        <h1 className="text-lg font-bold text-green-800 mb-5">サクっと作文アプリ ログイン</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-md">
+              {error}
+            </div>
+          )}
+
           <label className="block">
             <span className="block text-sm text-stone-700 mb-1">アカウント</span>
             <input

@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type WorkSummary = {
   id: string;
@@ -21,6 +22,7 @@ type WorkDetail = WorkSummary & {
  * 入力中テキストの描画、カーソル位置制御、作品の保存・登録・一覧取得を管理する。
  */
 export default function GenkoApp() {
+  const router = useRouter();
   const [view, setView] = useState<'list' | 'create'>('list');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -31,6 +33,7 @@ export default function GenkoApp() {
   
   const [pages, setPages] = useState<string[]>([""]);
   const [caretIndex, setCaretIndex] = useState(0);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isSaving, setIsSaving] = useState<"draft" | "registered" | null>(null);
   const [works, setWorks] = useState<WorkSummary[]>([]);
@@ -120,11 +123,32 @@ export default function GenkoApp() {
     }
   };
 
+  /**
+   * 認証チェック：トークンがなければログイン画面へ。
+   */
   useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      router.push("/login");
+    } else {
+      setIsAuthorized(true);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (!isAuthorized) return;
     queueMicrotask(() => {
       void fetchWorks();
     });
-  }, []);
+  }, [isAuthorized]);
+
+  /**
+   * ログアウト処理：トークンを削除してログイン画面へ。
+   */
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    router.push("/login");
+  };
 
   /**
    * 作文を一時保存する。
@@ -217,14 +241,18 @@ export default function GenkoApp() {
   /**
    * 作品を削除する。
    *
-   * @function deleteWork
+   * @function trashWork
    * @param {string} workId - 削除対象の作品ID
    */
-  const deleteWork = async (workId: string) => {
+  const trashWork = async (workId: string) => {
     if (!confirm("本当に削除しますか？")) return;
     try {
       const res = await fetch(`/api/works/${workId}`, { method: "DELETE" });
-      const data = (await res.json()) as { ok: boolean; error?: string };
+
+      // レスポンスが空の場合に備えてテキストとして取得し、中身がある時だけJSONパースする
+      const responseText = await res.text();
+      const data = responseText.trim() ? (JSON.parse(responseText) as { ok: boolean; error?: string }) : { ok: res.ok };
+
       if (!res.ok || !data.ok) throw new Error(data.error ?? "削除に失敗しました");
       await fetchWorks();
     } catch (e) {
@@ -365,6 +393,9 @@ export default function GenkoApp() {
   };
   const caretPos = getCellPosition(caretIndex);
 
+  // 認証チェックが終わるまでは何も表示しない（またはローディング表示）
+  if (!isAuthorized) return null;
+
   // 入力エリア（textarea）
   const textareaStyle: React.CSSProperties = {
     position: 'absolute',
@@ -396,8 +427,16 @@ export default function GenkoApp() {
       <header className="bg-green-800 text-white p-3 shadow-md flex-none flex flex-col gap-2">
         <div className="flex justify-between items-center">
           <h1 className="font-bold text-sm">
-            {view === "create" ? `${compositionTitle}${editingWorkId ? "（編集中）" : ""}` : "サクと作文アプリ"}
+            {view === "create" ? `${compositionTitle}${editingWorkId ? "（編集中）" : ""}` : "サクっと作文アプリ"}
           </h1>
+          {view === "list" && (
+            <button
+              onClick={handleLogout}
+              className="text-[10px] text-white/60 hover:text-white underline underline-offset-2"
+            >
+              ログアウト
+            </button>
+          )}
           {view === "create" && (
             <div className="flex gap-2">
               <button 
@@ -537,22 +576,26 @@ export default function GenkoApp() {
             </div>
           </div>
         ) : (
-          <div className="h-full flex flex-col p-6 md:p-8">
-            <div className="flex flex-col items-center justify-center text-center mb-6">
-              <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-stone-200">
-                <button 
-                  onClick={() => {
-                    setPages([""]);
-                    setCurrentPage(1);
-                    setCaretIndex(0);
-                    setEditingWorkId(null);
-                    setView('create');
-                  }}
-                  className="w-20 h-20 bg-green-700 text-white rounded-full text-4xl shadow-lg active:scale-95 transition"
-                >＋</button>
-              </div>
-              <p className="text-stone-500 font-sans">新しい作文を書こう</p>
+          <div className="h-full flex flex-col p-6 md:p-8 relative">
+            {/* フローティング「＋」ボタンと文言 */}
+            <div className="fixed bottom-10 right-10 z-20 flex flex-col items-center pointer-events-none">
+              <button
+                onClick={() => {
+                  setPages([""]);
+                  setCurrentPage(1);
+                  setCaretIndex(0);
+                  setEditingWorkId(null);
+                  setView("create");
+                }}
+                className="w-16 h-16 bg-green-700 text-white rounded-full text-4xl shadow-2xl active:scale-95 transition pointer-events-auto border-4 border-white flex items-center justify-center hover:bg-green-800"
+              >
+                ＋
+              </button>
+              <p className="text-stone-600 font-bold text-xs mt-2 bg-white/90 px-3 py-1 rounded-full shadow-md border border-stone-200">
+                新しい作文を書こう
+              </p>
             </div>
+
             <div className="bg-white border border-stone-200 rounded-lg shadow-sm overflow-hidden">
               <ul className="divide-y divide-stone-100">
                 {works.map((work) => (
@@ -560,7 +603,21 @@ export default function GenkoApp() {
                     key={work.id}
                     className="flex flex-col gap-2 px-4 py-3"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-stone-600">
+                          {new Date(work.created_at).toLocaleDateString("ja-JP")}
+                        </span>
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            work.status === "registered"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {work.status === "registered" ? "登録" : "一時保存"}
+                        </span>
+                      </div>
                       <div className="flex gap-2">
                         <button
                           type="button"
@@ -572,29 +629,15 @@ export default function GenkoApp() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => void deleteWork(work.id)}
+                          onClick={() => void trashWork(work.id)}
                           aria-label="削除"
                           className="h-8 w-8 flex-none rounded border border-stone-300 bg-white text-base leading-none text-red-600 hover:bg-red-50"
                         >
                           🗑️
                         </button>
                       </div>
-                      <span className="text-xs text-stone-600">
-                        {new Date(work.created_at).toLocaleDateString("ja-JP")}
-                      </span>
-                      <span>
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                            work.status === "registered"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-amber-100 text-amber-800"
-                          }`}
-                        >
-                          {work.status === "registered" ? "登録" : "一時保存"}
-                        </span>
-                      </span>
                     </div>
-                    <div className="text-sm font-bold text-stone-800 pl-[84px]">
+                    <div className="text-sm font-bold text-stone-800 whitespace-nowrap overflow-hidden text-ellipsis">
                       {work.title}
                     </div>
                   </li>
@@ -605,8 +648,9 @@ export default function GenkoApp() {
                   </li>
                 )}
                 {isLoadingWorks && (
-                  <li className="px-4 py-6 text-sm text-stone-500 text-center">
-                    読み込み中...
+                  <li className="px-4 py-12 flex flex-col items-center justify-center gap-3">
+                    <div className="spinner" />
+                    <span className="text-sm text-stone-500">作品を読み込んでいます...</span>
                   </li>
                 )}
               </ul>
@@ -629,6 +673,17 @@ export default function GenkoApp() {
         @keyframes caret-blink {
           0%, 45% { opacity: 1; }
           50%, 100% { opacity: 0; }
+        }
+        .spinner {
+          width: 32px;
+          height: 32px;
+          border: 4px solid rgba(0,0,0,0.1);
+          border-top-color: #166534;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </main>

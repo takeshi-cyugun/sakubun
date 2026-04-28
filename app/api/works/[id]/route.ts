@@ -1,4 +1,4 @@
-import { getWorkById, updateWork } from "@/lib/works";
+import {  getWorkById, updateWork, deleteWork } from "@/lib/works";
 
 type UpdateWorkRequestBody = {
   title?: string;
@@ -38,6 +38,18 @@ export async function PUT(request: Request, { params }: RouteParams) {
       return Response.json({ ok: false, error: "作品が見つかりません" }, { status: 404 });
     }
     return Response.json({ ok: true, work });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : typeof err === "string" ? err : JSON.stringify(err);
+    return Response.json({ ok: false, error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE(_: Request, { params }: RouteParams) {
+  try {
+    const { id } = await params;
+    await deleteWork(id);
+    return Response.json({ ok: true });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : typeof err === "string" ? err : JSON.stringify(err);

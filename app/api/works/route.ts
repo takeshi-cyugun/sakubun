@@ -4,10 +4,10 @@ export async function GET() {
   console.log("[GET /api/works] start");
   try {
     const works = await listWorks();
-    console.log("[GET /api/works] works:", works);
+    // console.log("[GET /api/works] works:", works);
     return Response.json({ ok: true, works });
   } catch (err) {
-    console.error("[GET /api/works] error:", err);
+    // console.error("[GET /api/works] error:", err);
     const message =
       err instanceof Error
         ? err.message

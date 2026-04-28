@@ -180,3 +180,18 @@ export async function listWorks() {
     return result.rows;
   });
 }
+
+/**
+ * 作品を削除する。
+ *
+ * @function deleteWork
+ * @param {string} id - 削除対象の作品ID
+ * @returns {Promise<void>} 削除処理の完了
+ */
+export async function deleteWork(id: string) {
+  return withClient(async (client) => {
+    await ensureWorksTable(client);
+    await client.query("delete from works where id = $1", [id]);
+  });
+
+}
