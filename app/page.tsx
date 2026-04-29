@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type WorkSummary = {
   id: string;
@@ -40,6 +41,7 @@ export default function GenkoApp() {
   const [isLoadingWorks, setIsLoadingWorks] = useState(false);
   const [editingWorkId, setEditingWorkId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const maxCells = rows * colsHalf * 2;
   const text = pages[currentPage - 1] ?? "";
   const totalChars = pages.reduce((sum, page) => sum + page.replace(/\s/g, "").length, 0);
@@ -141,6 +143,20 @@ export default function GenkoApp() {
       void fetchWorks();
     });
   }, [isAuthorized]);
+
+  /**
+   * 編集画面表示時に、原稿用紙の右端（書き出し位置）へスクロールする。
+   */
+  useEffect(() => {
+    if (view === 'create') {
+      const timer = setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+        }
+      }, 50); // レンダリング完了を待つための微小な待機
+      return () => clearTimeout(timer);
+    }
+  }, [view]);
 
   /**
    * ログアウト処理：トークンを削除してログイン画面へ。
@@ -264,8 +280,8 @@ export default function GenkoApp() {
   // コンテナ：全体のサイズを計算
   const containerStyle: React.CSSProperties = {
     position: 'relative',
-    width: `${(cellSize * colsHalf * 2) + middleWidth}px`,
-    height: `${cellSize * rows}px`,
+    width: `${(cellSize * colsHalf * 2) + middleWidth + 4}px`, // 左右の枠線分(2px * 2)を追加
+    height: `${cellSize * rows + 4}px`,                        // 上下の枠線分(2px * 2)を追加
     border: '2px solid green',
     backgroundColor: 'white',
     margin: '20px auto',
@@ -294,9 +310,10 @@ export default function GenkoApp() {
 
   const middleSpaceStyle: React.CSSProperties = {
     flex: `0 0 ${middleWidth}px`,
-    borderLeft: '1px solid green',
-    borderRight: '1px solid green',
+    borderLeft: '1px solid green',  // 11列目の右側の線
+    borderRight: '1px solid green', // 10列目（200文字目）の左側の線
     backgroundColor: 'white',
+    boxSizing: 'border-box',
   };
 
   /**
@@ -427,7 +444,7 @@ export default function GenkoApp() {
       <header className="bg-green-800 text-white p-3 shadow-md flex-none flex flex-col gap-2">
         <div className="flex justify-between items-center">
           <h1 className="font-bold text-sm">
-            {view === "create" ? `${compositionTitle}${editingWorkId ? "（編集中）" : ""}` : "サクっと作文アプリ"}
+            {view === "create" ? compositionTitle : "サクっと作文アプリ"}
           </h1>
           {view === "list" && (
             <button
@@ -482,7 +499,10 @@ export default function GenkoApp() {
         {view === 'create' ? (
           <div className="flex-1 flex flex-col p-4">
             {/* 原稿用紙部分のみの横スライドバー（スクロールエリア） */}
-            <div className="flex-1 overflow-x-auto overflow-y-hidden border-2 border-stone-300 shadow-inner bg-white rounded-sm custom-scrollbar px-4">
+            <div 
+              ref={scrollContainerRef}
+              className="flex-1 overflow-auto border-2 border-stone-300 shadow-inner bg-white rounded-sm custom-scrollbar px-4 py-4"
+            >
               
 
             <div style={containerStyle}>
@@ -577,6 +597,19 @@ export default function GenkoApp() {
           </div>
         ) : (
           <div className="h-full flex flex-col p-6 md:p-8 relative">
+            {/* フローティング「アドバイス」ボタン (左側) */}
+            <div className="fixed bottom-10 left-10 z-20 flex flex-col items-center pointer-events-none">
+              <Link
+                href="/advice"
+                className="w-16 h-16 bg-amber-500 text-white rounded-full text-3xl shadow-2xl active:scale-95 transition pointer-events-auto border-4 border-white flex items-center justify-center hover:bg-amber-600"
+              >
+                💡
+              </Link>
+              <p className="text-stone-600 font-bold text-[10px] mt-2 bg-white/90 px-3 py-1 rounded-full shadow-md border border-stone-200">
+                アドバイスをみる
+              </p>
+            </div>
+
             {/* フローティング「＋」ボタンと文言 */}
             <div className="fixed bottom-10 right-10 z-20 flex flex-col items-center pointer-events-none">
               <button
@@ -627,6 +660,13 @@ export default function GenkoApp() {
                         >
                           ✏️
                         </button>
+                        <Link
+                          href="/advice"
+                          className="h-8 w-8 flex items-center justify-center rounded border border-stone-300 bg-white text-base leading-none text-stone-600 hover:bg-stone-50"
+                          aria-label="アドバイス"
+                        >
+                          💡
+                        </Link>
                         <button
                           type="button"
                           onClick={() => void trashWork(work.id)}
@@ -662,6 +702,7 @@ export default function GenkoApp() {
       <style jsx>{`
         .custom-scrollbar::-webkit-scrollbar {
           height: 8px;
+          width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: #e7e5e4;
