@@ -430,6 +430,8 @@ export default function GenkoApp() {
     resize: 'none',
     padding: 0,
     margin: 0,
+    overflow: 'hidden', // textarea自身のスクロールを無効化
+    touchAction: 'auto', // スマホの標準的な挙動に任せる
     // --- ここが重要：升目に合わせる設定 ---
     fontSize: `${cellSize * 0.78}px`, // 文字サイズをマスより少し小さく（例: 24px）
     lineHeight: `${cellSize * 0.98}px`,    // 行の高さをマスに合わせる
@@ -492,7 +494,13 @@ export default function GenkoApp() {
             <div className="flex gap-4">
               <button onClick={goNextPage}>◀ 次</button>
               <span>{currentPage} ページ</span>
-              <button disabled={currentPage === 1} onClick={goPrevPage}>前 ▶</button>
+              <button
+                disabled={currentPage === 1}
+                onClick={goPrevPage}
+                className={currentPage === 1 ? "text-gray-400" : "text-white"}
+              >
+                前 ▶
+              </button>
             </div>
             <span>{totalChars} 文字</span>
           </div>
@@ -667,7 +675,7 @@ export default function GenkoApp() {
                           ✏️
                         </button>
                         <Link
-                          href="/advice"
+                          href="/grading"
                           className="h-8 w-8 flex items-center justify-center rounded border border-stone-300 bg-white text-base leading-none text-stone-600 hover:bg-stone-50"
                           aria-label="アドバイス"
                         >

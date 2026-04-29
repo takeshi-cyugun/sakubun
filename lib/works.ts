@@ -69,7 +69,7 @@ async function ensureWorksTable(client: PoolClient) {
     create table if not exists works (
       id text primary key,
       title text not null,
-      status text not null check (status in ('draft', 'registered')),
+      status text not null check (status in ('draft', 'registered', 'demo')),
       pages jsonb not null default '[]'::jsonb,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
