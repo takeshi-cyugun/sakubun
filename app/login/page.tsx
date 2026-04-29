@@ -15,9 +15,11 @@ export default function LoginPage() {
 
     const isValidMai = account === "mai" && password === "mai";
     const isValidPapa = account === "papa" && password === "papa";
+    const isValidDemo = account === "demo" && password === "demo";
 
-    if (isValidMai || isValidPapa) {
-      localStorage.setItem("auth_token", "dummy-session-token");
+    if (isValidMai || isValidPapa || isValidDemo) {
+      const token = isValidDemo ? "demo-token" : "dummy-session-token";
+      localStorage.setItem("auth_token", token);
       router.push("/");
     } else {
       setError("アカウント名またはパスワードが正しくありません。");

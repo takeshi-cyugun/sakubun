@@ -6,7 +6,7 @@ import Link from 'next/link';
 type WorkSummary = {
   id: string;
   title: string;
-  status: "draft" | "registered";
+  status: "draft" | "registered" | "demo";
   created_at: string;
 };
 
@@ -35,6 +35,7 @@ export default function GenkoApp() {
   const [pages, setPages] = useState<string[]>([""]);
   const [caretIndex, setCaretIndex] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isDemo, setIsDemo] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isSaving, setIsSaving] = useState<"draft" | "registered" | null>(null);
   const [works, setWorks] = useState<WorkSummary[]>([]);
@@ -116,7 +117,9 @@ export default function GenkoApp() {
         error?: string;
       };
       if (!res.ok || !data.ok) throw new Error(data.error ?? "一覧取得に失敗しました");
-      setWorks(data.works ?? []);
+      let fetchedWorks = data.works ?? [];
+      if (isDemo) fetchedWorks = fetchedWorks.filter(w => w.status === "demo");
+      setWorks(fetchedWorks);
     } catch (e) {
       const message = e instanceof Error ? e.message : "一覧取得に失敗しました";
       alert(message);
@@ -134,6 +137,7 @@ export default function GenkoApp() {
       router.push("/login");
     } else {
       setIsAuthorized(true);
+      setIsDemo(token === "demo-token");
     }
   }, [router]);
 
@@ -142,7 +146,7 @@ export default function GenkoApp() {
     queueMicrotask(() => {
       void fetchWorks();
     });
-  }, [isAuthorized]);
+  }, [isAuthorized, isDemo]);
 
   /**
    * 編集画面表示時に、原稿用紙の右端（書き出し位置）へスクロールする。
@@ -645,10 +649,12 @@ export default function GenkoApp() {
                           className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
                             work.status === "registered"
                               ? "bg-emerald-100 text-emerald-800"
+                              : work.status === "demo"
+                              ? "bg-blue-100 text-blue-800"
                               : "bg-amber-100 text-amber-800"
                           }`}
                         >
-                          {work.status === "registered" ? "登録" : "一時保存"}
+                          {work.status === "registered" ? "登録" : work.status === "demo" ? "デモ" : "一時保存"}
                         </span>
                       </div>
                       <div className="flex gap-2">
