@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 /**
- * 採点/評価画面コンポーネント。
- * テキストエリアに入力された内容をリアルタイムでMarkdownプレビューし、登録ボタンを提供する。
+ * 採点/評価画面のメインコンテンツ。
+ * useSearchParams を使用するため、Suspense境界内で呼び出す必要がある。
  */
-export default function GradingPage() {
+function GradingContent() {
   const [markdownInput, setMarkdownInput] = useState<string>('');
   const [workTitle, setWorkTitle] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
@@ -160,5 +160,21 @@ export default function GradingPage() {
         </p>
       </footer>
     </main>
+  );
+}
+
+/**
+ * 採点/評価画面ページコンポーネント。
+ * クライアントサイドでのパラメータ取得を安全に行うため Suspense でラップする。
+ */
+export default function GradingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-stone-500">読み込み中...</div>
+      </div>
+    }>
+      <GradingContent />
+    </Suspense>
   );
 }

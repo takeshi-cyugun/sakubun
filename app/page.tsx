@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -109,7 +109,7 @@ export default function GenkoApp() {
    * @description
    * `/api/works` を呼び出し、成功時は一覧を更新し、失敗時はアラートを表示する。
    */
-  const fetchWorks = async () => {
+  const fetchWorks = useCallback(async () => {
     try {
       setIsLoadingWorks(true);
       const res = await fetch("/api/works", { cache: "no-store" });
@@ -128,7 +128,7 @@ export default function GenkoApp() {
     } finally {
       setIsLoadingWorks(false);
     }
-  };
+  }, [isDemo]);
 
   /**
    * 認証チェック：トークンがなければログイン画面へ。
@@ -153,7 +153,7 @@ export default function GenkoApp() {
     queueMicrotask(() => {
       void fetchWorks();
     });
-  }, [isAuthorized, isDemo]);
+  }, [isAuthorized, fetchWorks]);
 
   /**
    * 編集画面表示時に、原稿用紙の右端（書き出し位置）へスクロールする。
