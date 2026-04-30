@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# サクっと作文 (Sakutto Sakubun)
 
-## Getting Started
+**「原稿用紙に書く楽しさを、デジタルでも。」**  
+子供たちの文章作成を支援する、ブラウザ完結型のリアルタイム縦書き作文アプリケーションです。
 
-First, run the development server:
+## 🚀 デモ・ログイン情報
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+以下のURLから実際に操作いただけます。企業担当者様向けのデモアカウントを用意しております。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **URL:** [https://sakubun-flax.vercel.app/](https://sakubun-flax.vercel.app/)
+- **ID:** `demo`
+- **Password:** `demo`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠 技術的な見どころ（エンジニア視点）
 
-## Learn More
+本プロジェクトでは、Web標準では実装が困難な「縦書き原稿用紙」のUI/UXを実現するために、以下の技術的工夫を行っています。
 
-To learn more about Next.js, take a look at the following resources:
+### 1. 独自の縦書きレンダリングエンジン
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+HTMLの `writing-mode: vertical-rl` と `textarea` を組み合わせつつ、原稿用紙の「マス目」に文字を正確に配置するため、フォントサイズとラインハイトの動的計算ロジックを実装しています。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 2. インテリジェントな自動改ページ処理
 
-## Deploy on Vercel
+文章の途中に文字を挿入した際、1ページ（400文字）を超えた分を**自動的に2ページ目以降へ流し込む（オーバーフロー処理）**アルゴリズムを自作しました。バイナリサーチを用いた文字位置計算により、大量の文章入力時でも低遅延な入力を維持しています。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. モバイル・ファーストの操作性
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+スマホでのドラッグスクロールと、`textarea` 内部のイベントキャプチャを両立させ、PC・スマホ両方で直感的な操作感を実現しました。
+
+---
+
+## ✨ 主な機能
+
+- **リアルタイム縦書き入力:** 原稿用紙のマス目に合わせたリアルタイムな文字描画。
+- **下書き・本登録機能:** 執筆途中の保存と、完成後の作品一覧管理。
+- **自動文字数カウント:** ページを跨いだ総文字数のリアルタイム集計。
+- **アドバイス機能:** 子供たちの執筆を助けるガイド機能（実装予定/一部実装）。
+- **レスポンシブ対応:** 横長・縦長どちらのデバイスでも原稿用紙の質感を維持。
+
+---
+
+## 🏗 使用技術スタック
+
+| カテゴリ       | 技術                         |
+| :------------- | :--------------------------- |
+| **Frontend**   | React / Next.js (App Router) |
+| **Styling**    | Tailwind CSS / CSS Modules   |
+| **Language**   | TypeScript                   |
+| **Deployment** | Vercel                       |
+
+---
+
+## 💡 開発の背景
+
+「親子で楽しく作文に取り組める環境を作りたい」という想いからスタートしました。  
+従来のデジタル作文ツールは「横書きのメモ帳」に近いものが多く、小学校で習う「原稿用紙の使い方」を学ぶには不十分でした。本アプリは、マスの使い方（句読点の位置や改行ルール）を視覚的に意識できる設計にこだわっています。
+
+---
+
+## 👤 開発者情報
+
+**[中軍 武]**  
+フリーランスエンジニアとして、React/Next.jsを中心としたモダンなWebフロントエンド開発を得意としています。UI/UXの細部へのこだわりと、複雑な状態管理をシンプルに保つ設計を重視しています。
+
+---
+
+© 2024 Sakutto Sakubun Project

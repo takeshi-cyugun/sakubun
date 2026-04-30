@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Link from 'next/link';
 
 /**
  * アドバイス画面コンポーネント。
@@ -21,12 +22,28 @@ export default function AdvicePage() {
       title: "表現を豊かにする",
       icon: "✨",
       description: "「うれしい」だけでなく、どんな風にうれしかったか（飛び跳ねたいくらい、胸が熱くなった、など）を言葉にしてみると、より素敵な文章になります。"
+    },
+    {
+      title: "作文の構成を考える",
+      icon: "📝",
+      description: "いきなり書き始めるのではなく、「はじめ・中・おわり」の３つのパーツに分けて考えてみましょう。何を一番伝えたいか決めておくと、スッキリした文章になります。"
+    },
+    {
+      title: "書き終えたら読み返そう",
+      icon: "👀",
+      description: "最後まで書けたら、一度声に出して読み返してみましょう。抜けている文字がないか、自分の言いたいことが伝わるようになっているか確認することで、もっと素晴らしい作文になります。"
     }
   ];
 
   return (
     <main className="min-h-screen bg-stone-100 flex flex-col p-6 overflow-y-auto">
-      <header className="mb-8 text-center">
+      <header className="mb-8 text-center relative">
+        <Link 
+          href="/" 
+          className="absolute left-0 top-1 text-sm text-green-800 font-bold flex items-center gap-1 hover:underline active:scale-95 transition-transform"
+        >
+          ◀ 戻る
+        </Link>
         <h1 className="text-2xl font-bold text-green-900 mb-2">アドバイス</h1>
         <div className="w-16 h-1 bg-green-700 mx-auto rounded-full" />
         <p className="mt-4 text-sm text-stone-600">もっと楽しく作文を書くためのヒント</p>

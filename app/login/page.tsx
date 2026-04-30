@@ -15,9 +15,10 @@ export default function LoginPage() {
 
     const isValidMai = account === "mai" && password === "mai";
     const isValidPapa = account === "papa" && password === "papa";
+    const isValidMama = account === "mama" && password === "mama";
     const isValidDemo = account === "demo" && password === "demo";
 
-    if (isValidMai || isValidPapa || isValidDemo) {
+    if (isValidMai || isValidPapa || isValidMama ||isValidDemo) {
       const token = isValidDemo ? "demo-token" : "dummy-session-token";
       localStorage.setItem("auth_token", token);
       router.push("/");
