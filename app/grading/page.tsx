@@ -15,10 +15,25 @@ export default function GradingPage() {
   const [workTitle, setWorkTitle] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGrader, setIsGrader] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
   const workId = searchParams.get('id');
+
+  // 認証チェックと権限判定
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      router.push("/login");
+    } else {
+      setIsAuthorized(true);
+      // papa または mama トークンを持っている場合のみ採点者（Grader）とする
+      // ※ログイン処理で papa/papa なら "papa-token" を保存している想定
+      setIsGrader(token === "papa-token" || token === "mama-token");
+    }
+  }, [router]);
 
   // 作品データの取得
   const fetchWork = useCallback(async () => {
@@ -40,8 +55,8 @@ export default function GradingPage() {
   }, [workId]);
 
   useEffect(() => {
-    void fetchWork();
-  }, [fetchWork]);
+    if (isAuthorized) void fetchWork();
+  }, [fetchWork, isAuthorized]);
 
   // 登録・更新処理
   const handleRegister = async () => {
@@ -72,27 +87,35 @@ export default function GradingPage() {
     setTimeout(() => { void handleRegister(); }, 0);
   };
 
+  // 認証チェックが終わるまでは何も表示しない
+  if (!isAuthorized) return null;
+
   return (
     <main className="min-h-screen bg-stone-50 flex flex-col overflow-y-auto">
       <header className="bg-green-800 text-white p-4 shadow-md flex justify-between items-center">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-white/80 hover:text-white text-sm flex items-center gap-1">
-            <span>←</span> もどる
+            <span>←</span> 一覧へ
           </Link>
-          <h1 className="text-lg font-bold">採点・評価 {workTitle && ` : ${workTitle}`}</h1>
+          <h1 className="text-lg font-bold">
+            {isGrader ? "採点・評価" : "先生からのアドバイス"} {workTitle && ` : ${workTitle}`}
+          </h1>
         </div>
-        <button
-          onClick={handleRegister}
-          disabled={isSaving || !workId}
-          className="bg-yellow-500 text-green-900 font-bold px-4 py-1 rounded text-sm shadow-sm hover:bg-yellow-400"
-        >
-          {isSaving ? '保存中...' : '登録する'}
-        </button>
+        {isGrader && (
+          <button
+            onClick={handleRegister}
+            disabled={isSaving || !workId}
+            className="bg-yellow-500 text-green-900 font-bold px-4 py-1 rounded text-sm shadow-sm hover:bg-yellow-400"
+          >
+            {isSaving ? '保存中...' : '登録する'}
+          </button>
+        )}
       </header>
 
-      <div className="flex flex-col md:flex-row gap-6 p-6 max-w-6xl mx-auto w-full flex-1">
+      <div className={`flex flex-col ${isGrader ? 'md:flex-row' : 'items-center'} gap-6 p-6 max-w-6xl mx-auto w-full flex-1`}>
         {/* 入力エリア */}
-        <section className="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col">
+        {isGrader && (
+          <section className="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col w-full">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-lg font-bold text-green-800">評価入力</h2>
             {markdownInput && (
@@ -112,13 +135,14 @@ export default function GradingPage() {
             disabled={isLoading}
           />
         </section>
+        )}
 
         {/* プレビューエリア */}
-        <section className="flex-1 bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col">
-          <h2 className="text-lg font-bold text-green-800 mb-3">プレビュー</h2>
+        <section className={`${isGrader ? 'flex-1' : 'w-full max-w-2xl'} bg-white p-6 rounded-2xl shadow-sm border border-stone-200 flex flex-col min-h-[400px]`}>
+          <h2 className="text-lg font-bold text-green-800 mb-3">{isGrader ? "プレビュー" : "評価シート"}</h2>
           <div className="flex-1 p-4 border border-stone-100 rounded-xl bg-white overflow-y-auto">
             {markdownInput ? (
-              <div className="prose prose-stone prose-sm sm:prose-base max-w-none break-words">
+              <div className="prose prose-stone prose-sm sm:prose-base max-w-none break-words prose-headings:text-green-900">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {markdownInput}
                 </ReactMarkdown>

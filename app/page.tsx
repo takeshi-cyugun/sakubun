@@ -35,6 +35,8 @@ export default function GenkoApp() {
   const [pages, setPages] = useState<string[]>([""]);
   const [caretIndex, setCaretIndex] = useState(0);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [accountName, setAccountName] = useState("");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDemo, setIsDemo] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isSaving, setIsSaving] = useState<"draft" | "registered" | null>(null);
@@ -138,6 +140,11 @@ export default function GenkoApp() {
     } else {
       setIsAuthorized(true);
       setIsDemo(token === "demo-token");
+      // トークンからアカウント名を判定
+      if (token === "papa-token") setAccountName("papa");
+      else if (token === "mama-token") setAccountName("mama");
+      else if (token === "mai-token") setAccountName("mai");
+      else if (token === "demo-token") setAccountName("demo");
     }
   }, [router]);
 
@@ -453,12 +460,35 @@ export default function GenkoApp() {
             {view === "create" ? compositionTitle : "サクっと作文アプリ"}
           </h1>
           {view === "list" && (
-            <button
-              onClick={handleLogout}
-              className="text-[10px] text-white/60 hover:text-white underline underline-offset-2"
-            >
-              ログアウト
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-1 rounded-full hover:bg-green-700 transition-colors focus:outline-none flex items-center justify-center border border-white/20"
+                aria-label="ユーザーメニュー"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+              </button>
+              
+              {isMenuOpen && (
+                <>
+                  {/* メニューの外側をクリックして閉じるための透明レイヤー */}
+                  <div className="fixed inset-0 z-30" onClick={() => setIsMenuOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-xl py-1 z-40 border border-stone-200 animate-in fade-in zoom-in duration-100">
+                    <div className="px-4 py-2 text-[10px] text-stone-400 border-b border-stone-100 uppercase tracking-wider">
+                      User: <span className="font-bold text-green-800">{accountName}</span>
+                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors font-medium flex items-center gap-2"
+                    >
+                      <span>🚪</span> ログアウト
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
           {view === "create" && (
             <div className="flex gap-2">
@@ -642,7 +672,7 @@ export default function GenkoApp() {
             </div>
 
             <div className="bg-white border border-stone-200 rounded-lg shadow-sm overflow-hidden">
-              <ul className="divide-y divide-stone-100">
+              <ul className="divide-y divide-stone-200">
                 {works.map((work) => (
                   <li
                     key={work.id}

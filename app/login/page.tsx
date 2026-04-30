@@ -18,8 +18,13 @@ export default function LoginPage() {
     const isValidMama = account === "mama" && password === "mama";
     const isValidDemo = account === "demo" && password === "demo";
 
-    if (isValidMai || isValidPapa || isValidMama ||isValidDemo) {
-      const token = isValidDemo ? "demo-token" : "dummy-session-token";
+    let token: string | null = null;
+    if (isValidPapa) token = "papa-token";
+    else if (isValidMama) token = "mama-token";
+    else if (isValidMai) token = "mai-token";
+    else if (isValidDemo) token = "demo-token";
+
+    if (token) {
       localStorage.setItem("auth_token", token);
       router.push("/");
     } else {
