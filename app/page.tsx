@@ -671,7 +671,7 @@ export default function GenkoApp() {
               </p>
             </div>
 
-            <div className="bg-white border border-stone-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="flex-1 bg-white border border-stone-200 rounded-lg shadow-sm overflow-y-auto">
               <ul className="divide-y divide-stone-200">
                 {works.map((work) => (
                   <li
@@ -705,7 +705,7 @@ export default function GenkoApp() {
                           ✏️
                         </button>
                         <Link
-                          href="/grading"
+                          href={`/grading?id=${work.id}`}
                           className="h-8 w-8 flex items-center justify-center rounded border border-stone-300 bg-white text-base leading-none text-stone-600 hover:bg-stone-50"
                           aria-label="アドバイス"
                         >
