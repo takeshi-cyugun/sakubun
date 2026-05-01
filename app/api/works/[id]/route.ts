@@ -1,9 +1,10 @@
-import {  getWorkById, updateWork, deleteWork } from "@/lib/works";
+import { getWorkById, updateWork, updateEvaluation, deleteWork } from "@/lib/works";
 
 type UpdateWorkRequestBody = {
   title?: string;
   pages?: string[];
   status?: "draft" | "registered";
+  evaluation?: string;
 };
 
 type RouteParams = {
@@ -29,6 +30,17 @@ export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
     const body = (await request.json()) as UpdateWorkRequestBody;
+
+    // 評価（evaluation）のみの更新リクエストの場合
+    if (body.evaluation !== undefined) {
+      const work = await updateEvaluation(id, body.evaluation);
+      if (!work) {
+        return Response.json({ ok: false, error: "作品が見つかりません" }, { status: 404 });
+      }
+      return Response.json({ ok: true, work });
+    }
+
+    // 通常の作文内容（タイトル、本文、ステータス）の更新
     const title = (body.title ?? "").trim() || "（タイトル未入力）";
     const pages = Array.isArray(body.pages) ? body.pages : [];
     const status = body.status === "registered" ? "registered" : "draft";

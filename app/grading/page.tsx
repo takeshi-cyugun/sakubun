@@ -59,14 +59,21 @@ function GradingContent() {
   }, [fetchWork, isAuthorized]);
 
   // 登録・更新処理
-  const handleRegister = async () => {
+  /**
+   * 評価を保存する。
+   * @param {string} overridingValue - 明示的に値を指定する場合（削除時など）
+   */
+  const handleRegister = async (overridingValue?: string) => {
     if (!workId) return;
     try {
       setIsSaving(true);
+      // 引数があればそれを使用し、なければ現在の入力値を使用する
+      const evaluationValue = typeof overridingValue === 'string' ? overridingValue : markdownInput;
+
       const res = await fetch(`/api/works/${workId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ evaluation: markdownInput }),
+        body: JSON.stringify({ evaluation: evaluationValue }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || '保存に失敗しました');
@@ -83,8 +90,8 @@ function GradingContent() {
   const handleDelete = async () => {
     if (!confirm('評価内容を削除してもよろしいですか？')) return;
     setMarkdownInput('');
-    // 削除は空文字で更新する処理として共通化
-    setTimeout(() => { void handleRegister(); }, 0);
+    // 空文字を直接渡して即座に更新を実行
+    void handleRegister('');
   };
 
   // 認証チェックが終わるまでは何も表示しない
@@ -94,16 +101,24 @@ function GradingContent() {
     <main className="min-h-screen bg-stone-50 flex flex-col overflow-y-auto">
       <header className="bg-green-800 text-white p-4 shadow-md flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-white/80 hover:text-white text-sm flex items-center gap-1">
-            <span>←</span> 一覧へ
+          <Link 
+            href="/" 
+            className="text-white/80 hover:text-white text-sm font-bold flex items-center gap-1 hover:underline active:scale-95 transition-transform"
+          >
+            ◀ 戻る
           </Link>
-          <h1 className="text-lg font-bold">
-            {isGrader ? "採点・評価" : "先生からのアドバイス"} {workTitle && ` : ${workTitle}`}
-          </h1>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-white/70 font-medium leading-none mb-1 uppercase tracking-wider">
+              {isGrader ? "採点・評価" : "先生からのアドバイス"}
+            </span>
+            <h1 className="text-base font-bold leading-tight">
+              {workTitle || "読み込み中..."}
+            </h1>
+          </div>
         </div>
         {isGrader && (
           <button
-            onClick={handleRegister}
+            onClick={() => handleRegister()}
             disabled={isSaving || !workId}
             className="bg-yellow-500 text-green-900 font-bold px-4 py-1 rounded text-sm shadow-sm hover:bg-yellow-400"
           >
