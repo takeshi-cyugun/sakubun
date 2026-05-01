@@ -1,12 +1,13 @@
 import { Pool, type PoolClient } from "pg";
 
-export type WorkStatus = "draft" | "registered";
+export type WorkStatus = "draft" | "registered" | "demo";
 
 export type WorkRow = {
   id: string;
   title: string;
   status: WorkStatus;
   pages: string[];
+  evaluation: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -71,6 +72,7 @@ async function ensureWorksTable(client: PoolClient) {
       title text not null,
       status text not null check (status in ('draft', 'registered', 'demo')),
       pages jsonb not null default '[]'::jsonb,
+      evaluation text,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     );
@@ -151,9 +153,34 @@ export async function updateWork(input: {
           pages = $4::jsonb,
           updated_at = now()
       where id = $1
-      returning id, title, status, pages, created_at::text, updated_at::text;
+      returning id, title, status, pages, evaluation, created_at::text, updated_at::text;
       `,
       [input.id, input.title, input.status, JSON.stringify(input.pages)]
+    );
+    return result.rows[0] ?? null;
+  });
+}
+
+/**
+ * 作品の評価（採点）のみを更新する。
+ *
+ * @function updateEvaluation
+ * @param {string} id - 作品ID
+ * @param {string | null} evaluation - 評価内容（Markdownなど）
+ * @returns {Promise<WorkRow | null>} 更新後の作品レコード
+ */
+export async function updateEvaluation(id: string, evaluation: string | null) {
+  return withClient(async (client) => {
+    await ensureWorksTable(client);
+    const result = await client.query<WorkRow>(
+      `
+      update works
+      set evaluation = $2,
+          updated_at = now()
+      where id = $1
+      returning id, title, status, pages, evaluation, created_at::text, updated_at::text;
+      `,
+      [id, evaluation]
     );
     return result.rows[0] ?? null;
   });
@@ -172,7 +199,7 @@ export async function listWorks() {
   return withClient(async (client) => {
     await ensureWorksTable(client);
     const result = await client.query<WorkRow>(`
-      select id, title, status, pages, created_at::text, updated_at::text
+      select id, title, status, pages, evaluation, created_at::text, updated_at::text
       from works
       order by created_at desc
       limit 50;
