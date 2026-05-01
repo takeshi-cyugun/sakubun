@@ -99,7 +99,7 @@ export async function createWork(input: { title: string; status: WorkStatus; pag
       `
       insert into works (id, title, status, pages)
       values ($1, $2, $3, $4::jsonb)
-      returning id, title, status, pages, created_at::text, updated_at::text;
+      returning id, title, status, pages, evaluation, created_at::text, updated_at::text;
       `,
       [id, input.title, input.status, JSON.stringify(input.pages)]
     );
@@ -119,7 +119,7 @@ export async function getWorkById(id: string) {
     await ensureWorksTable(client);
     const result = await client.query<WorkRow>(
       `
-      select id, title, status, pages, created_at::text, updated_at::text
+      select id, title, status, pages, evaluation, created_at::text, updated_at::text
       from works
       where id = $1
       limit 1;
@@ -134,7 +134,7 @@ export async function getWorkById(id: string) {
  * 既存作品を更新する。
  *
  * @function updateWork
- * @param {{ id: string; title: string; status: WorkStatus; pages: string[] }} input - 更新対象と更新内容
+ * @param {{ id: string; title: string; status: WorkStatus; pages: string[] }} input - 更新対象と作品の基本内容
  * @returns {Promise<WorkRow | null>} 更新後の作品。存在しない場合は `null`
  */
 export async function updateWork(input: {
