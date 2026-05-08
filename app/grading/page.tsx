@@ -13,6 +13,7 @@ import remarkGfm from 'remark-gfm';
 function GradingContent() {
   const [markdownInput, setMarkdownInput] = useState<string>('');
   const [workTitle, setWorkTitle] = useState<string>('');
+  const [workPages, setWorkPages] = useState<string[]>([]); // 作文のページ内容を保持
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGrader, setIsGrader] = useState(false);
@@ -45,6 +46,7 @@ function GradingContent() {
       if (data.ok && data.work) {
         setWorkTitle(data.work.title);
         // 既存の評価があればセット
+        setWorkPages(data.work.pages || []); // 作文内容もセット
         setMarkdownInput(data.work.evaluation || '');
       }
     } catch (e) {
@@ -94,6 +96,20 @@ function GradingContent() {
     void handleRegister('');
   };
 
+  // 作文の内容をクリップボードにコピー
+  const handleCopyComposition = async () => {
+    try {
+      // 各ページのテキストを結合してコピー
+      const fullComposition = workPages.join('\n\n'); // ページ間に改行を挟む
+      await navigator.clipboard.writeText(fullComposition);
+      alert('作文の内容をコピーしました！');
+    } catch (e) {
+      console.error('クリップボードへのコピーに失敗しました:', e);
+      alert('コピーに失敗しました。お使いのブラウザが対応していないか、許可が必要です。');
+    }
+  };
+
+
   // 認証チェックが終わるまでは何も表示しない
   if (!isAuthorized) return null;
 
@@ -134,12 +150,21 @@ function GradingContent() {
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-lg font-bold text-green-800">評価入力</h2>
             {markdownInput && (
-              <button
-                onClick={handleDelete}
-                className="text-xs text-red-600 hover:underline"
-              >
-                評価を削除する
-              </button>
+              <div className="flex gap-4 items-center">
+                <button
+                  onClick={handleCopyComposition}
+                  className="text-xs text-green-700 hover:underline"
+                  disabled={workPages.length === 0}
+                >
+                  作文をコピー
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="text-xs text-red-600 hover:underline"
+                >
+                  評価を削除する
+                </button>
+              </div>
             )}
           </div>
           <textarea
