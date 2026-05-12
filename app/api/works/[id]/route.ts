@@ -11,6 +11,19 @@ type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
+/**
+ * 作品IDを指定して詳細を取得する。
+ *
+ * @function GET
+ * @description
+ *  - 作品IDを指定して詳細を取得する。
+ *  - 指定されたIDに基づき、作品情報を取得します。
+ *
+ * @param _ - リクエストオブジェクト
+ * @param context - ルートパラメータを含むコンテキスト
+ * @throws {404} 作品が見つからない場合
+ * @throws {500} サーバーエラー
+ */
 export async function GET(_: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -26,6 +39,20 @@ export async function GET(_: Request, { params }: RouteParams) {
   }
 }
 
+/**
+ * 作品の内容または評価を更新する。
+ *
+ * @function PUT
+ * @description
+ *  - 作品の内容または評価を更新する。
+ *  - `evaluation` が含まれる場合は評価内容の更新を行います。
+ *  - それ以外は作品のタイトル、ページ、ステータスを更新します。
+ *
+ * @param request - `title`, `pages`, `status`, `evaluation` を含む JSON を期待します。
+ * @param context - ルートパラメータを含むコンテキスト
+ * @throws {404} 作品が見つからない場合
+ * @throws {500} サーバーエラー
+ */
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
@@ -57,6 +84,18 @@ export async function PUT(request: Request, { params }: RouteParams) {
   }
 }
 
+/**
+ * 作品を削除する。
+ *
+ * @function DELETE
+ * @description
+ *  - 作品を削除する。
+ *  - 指定された作品をデータベースから削除します。
+ *
+ * @param _ - リクエストオブジェクト
+ * @param context - ルートパラメータを含むコンテキスト
+ * @throws {500} サーバーエラー
+ */
 export async function DELETE(_: Request, { params }: RouteParams) {
   try {
     const { id } = await params;

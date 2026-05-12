@@ -8,7 +8,10 @@ import remarkGfm from 'remark-gfm';
 
 /**
  * 採点/評価画面のメインコンテンツ。
- * useSearchParams を使用するため、Suspense境界内で呼び出す必要がある。
+ *
+ * @function GradingContent
+ * @description
+ *  - useSearchParams を使用するため、Suspense境界内で呼び出す必要がある。
  */
 function GradingContent() {
   const [markdownInput, setMarkdownInput] = useState<string>('');
@@ -37,6 +40,13 @@ function GradingContent() {
   }, [router]);
 
   // 作品データの取得
+  /**
+   * @function fetchWork
+   * @description
+   *  - 作品データをサーバーから取得し、状態に反映する。
+   + @description
+   +  - `/api/works/{workId}` を呼び出し、成功時は作品データと評価を更新する。
+   */
   const fetchWork = useCallback(async () => {
     if (!workId) return;
     try {
@@ -62,8 +72,13 @@ function GradingContent() {
 
   // 登録・更新処理
   /**
-   * 評価を保存する。
-   * @param {string} overridingValue - 明示的に値を指定する場合（削除時など）
+   * 評価をサーバーに保存する。
+   *
+   * @function handleRegister
+   * @description
+   *  - 評価をサーバーに保存する。
+   * @param overridingValue - 明示的に値を指定する場合（削除時など）
+   * @returns 保存処理の完了
    */
   const handleRegister = async (overridingValue?: string) => {
     if (!workId) return;
@@ -89,6 +104,12 @@ function GradingContent() {
   };
 
   // 削除（評価のクリア）処理
+  /**
+   * @function handleDelete
+   * @description
+   *  - 評価内容を削除する。
+   * @returns 削除処理の完了
+   */
   const handleDelete = async () => {
     if (!confirm('評価内容を削除してもよろしいですか？')) return;
     setMarkdownInput('');
@@ -96,7 +117,12 @@ function GradingContent() {
     void handleRegister('');
   };
 
-  // 作文の内容をクリップボードにコピー
+  /**
+   * @function handleCopyComposition
+   * @description
+   *  - 作文の内容をクリップボードにコピーする。
+   * @returns コピー処理の完了
+   */
   const handleCopyComposition = async () => {
     try {
       // 各ページのテキストを結合してコピー
@@ -205,7 +231,10 @@ function GradingContent() {
 
 /**
  * 採点/評価画面ページコンポーネント。
- * クライアントサイドでのパラメータ取得を安全に行うため Suspense でラップする。
+ *
+ * @function GradingPage
+ * @description
+ *  - クライアントサイドでのパラメータ取得を安全に行うため Suspense でラップする。
  */
 export default function GradingPage() {
   return (

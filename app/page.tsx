@@ -18,9 +18,10 @@ type WorkDetail = WorkSummary & {
  * 原稿用紙UIと作品一覧UIを切り替えて表示するメイン画面コンポーネント。
  *
  * @function GenkoApp
- * @returns {JSX.Element} 作文作成画面または作品一覧画面
  * @description
- * 入力中テキストの描画、カーソル位置制御、作品の保存・登録・一覧取得を管理する。
+ *  - 原稿用紙UIと作品一覧UIを切り替えて表示するメイン画面コンポーネント。
+ *  - 入力中テキストの描画、カーソル位置制御、作品の保存・登録・一覧取得を管理する。
+ * @returns 作文作成画面または作品一覧画面
  */
 export default function GenkoApp() {
   const router = useRouter();
@@ -53,11 +54,11 @@ export default function GenkoApp() {
    * テキスト位置を原稿用紙のマス目インデックスへ変換する。
    *
    * @function getCellIndexFromTextPosition
-   * @param {string} value - 変換対象の文字列
-   * @param {number} pos - 文字列内カーソル位置
-   * @returns {number} マス目インデックス（0以上 `maxCells` 以下）
    * @description
-   * 改行時は次の列先頭へ進める縦書きルールで位置を計算する。
+   *  - 改行時は次の列先頭へ進める縦書きルールで位置を計算する。
+   * @param value - 変換対象の文字列
+   * @param pos - 文字列内カーソル位置
+   * @returns マス目インデックス（0以上 `maxCells` 以下）
    */
   const getCellIndexFromTextPosition = (value: string, pos: number) => {
     let cellIndex = 0;
@@ -78,10 +79,10 @@ export default function GenkoApp() {
    * 原稿用紙の右端1列目からタイトル文字列を抽出する。
    *
    * @function getTitleFromFirstColumn
-   * @param {string} value - 1ページ目の全文テキスト
-   * @returns {string} 1列目から組み立てたタイトル文字列
    * @description
-   * 最大行数までを対象に、縦書きの1列目に配置される文字のみを連結して返す。
+   *  - 最大行数までを対象に、縦書きの1列目に配置される文字のみを連結して返す。
+   * @param value - 1ページ目の全文テキスト
+   * @returns 1列目から組み立てたタイトル文字列
    */
   const getTitleFromFirstColumn = (value: string) => {
     const firstColumnChars: string[] = [];
@@ -105,9 +106,9 @@ export default function GenkoApp() {
    * 作品一覧をサーバーから取得して状態へ反映する。
    *
    * @function fetchWorks
-   * @returns {Promise<void>} 取得処理の完了
    * @description
-   * `/api/works` を呼び出し、成功時は一覧を更新し、失敗時はアラートを表示する。
+   *  - `/api/works` を呼び出し、成功時は一覧を更新し、失敗時はアラートを表示する。
+   * @returns 取得処理の完了
    */
   const fetchWorks = useCallback(async () => {
     try {
@@ -181,9 +182,9 @@ export default function GenkoApp() {
    * 作文を一時保存する。
    *
    * @function saveDraft
-   * @returns {Promise<void>} 保存処理の完了
    * @description
-   * 現在のタイトルとページ内容を `/api/works/draft` へ送信し、成功後に一覧を再取得する。
+   *  - 現在のタイトルとページ内容を `/api/works/draft` へ送信し、成功後に一覧を再取得する。
+   * @returns 保存処理の完了
    */
   const saveDraft = async () => {
     try {
@@ -211,9 +212,9 @@ export default function GenkoApp() {
    * 作文を正式登録する。
    *
    * @function registerWork
-   * @returns {Promise<void>} 登録処理の完了
    * @description
-   * 現在のタイトルとページ内容を `/api/works/register` へ送信し、成功後に一覧画面へ戻る。
+   *  - 現在のタイトルとページ内容を `/api/works/register` へ送信し、成功後に一覧画面へ戻る。
+   * @returns 登録処理の完了
    */
   const registerWork = async () => {
     try {
@@ -243,8 +244,10 @@ export default function GenkoApp() {
    * 一覧から作品を選択して編集画面へ遷移する。
    *
    * @function startEditWork
-   * @param {string} workId - 編集対象の作品ID
-   * @returns {Promise<void>} 読み込み完了までのPromise
+   * @description
+   *  - 一覧から作品を選択して編集画面へ遷移する。
+   * @param workId - 編集対象の作品ID
+   * @returns 読み込み完了までのPromise
    */
   const startEditWork = async (workId: string) => {
     try {
@@ -269,7 +272,9 @@ export default function GenkoApp() {
    * 作品を削除する。
    *
    * @function trashWork
-   * @param {string} workId - 削除対象の作品ID
+   * @description
+   *  - 作品を削除する。
+   * @param workId - 削除対象の作品ID
    */
   const trashWork = async (workId: string) => {
     if (!confirm("本当に削除しますか？")) return;
@@ -331,9 +336,9 @@ export default function GenkoApp() {
    * テキストを原稿用紙表示用の2次元グリッドに変換する。
    *
    * @function getCenteredTextGrid
-   * @returns {string[][]} 行・列ごとに文字を格納した配列
    * @description
-   * 右上から縦方向へ配置する規則で、描画用の文字マップを生成する。
+   *  - 右上から縦方向へ配置する規則で、描画用の文字マップを生成する。
+   * @returns 行・列ごとに文字を格納した配列
    */
   const getCenteredTextGrid = () => {
     // 文字列を右上から縦書き順で各マスに配置する
@@ -361,9 +366,9 @@ export default function GenkoApp() {
    * 次のページへ移動し、必要なら新規ページを追加する。
    *
    * @function goNextPage
-   * @returns {void} 戻り値なし
    * @description
-   * 末尾ページにいる場合は空ページを追加してからページ番号を進める。
+   *  - 末尾ページにいる場合は空ページを追加してからページ番号を進める。
+   * @returns 戻り値なし
    */
   const goNextPage = () => {
     setPages((prev) => {
@@ -378,9 +383,9 @@ export default function GenkoApp() {
    * 前のページへ移動する。
    *
    * @function goPrevPage
-   * @returns {void} 戻り値なし
    * @description
-   * 1ページ未満には移動せず、カーソル位置を先頭へ戻す。
+   *  - 1ページ未満には移動せず、カーソル位置を先頭へ戻す。
+   * @returns 戻り値なし
    */
   const goPrevPage = () => {
     setCurrentPage((p) => Math.max(1, p - 1));
@@ -405,10 +410,10 @@ export default function GenkoApp() {
    * マス目インデックスから画面上の座標を計算する。
    *
    * @function getCellPosition
-   * @param {number} index - マス目インデックス
-   * @returns {{ left: number; top: number }} 描画用の left / top 座標
    * @description
-   * 中央余白を考慮して、左右20列分の縦書きグリッド座標へ変換する。
+   *  - 中央余白を考慮して、左右20列分の縦書きグリッド座標へ変換する。
+   * @param index - マス目インデックス
+   * @returns 描画用の left / top 座標
    */
   const getCellPosition = (index: number) => {
     const safeIndex = Math.max(0, Math.min(index, maxCells));

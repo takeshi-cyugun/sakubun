@@ -16,10 +16,10 @@ export type WorkRow = {
  * PostgreSQL の接続文字列を環境変数から取得する。
  *
  * @function getConnectionString
- * @returns {string | undefined} 利用可能な接続文字列。未設定の場合は `undefined`
  * @description
- * `POSTGRES_URL_NON_POOLING` を優先し、未設定なら `POSTGRES_URL`、
- * それも未設定なら `DATABASE_URL` を参照する。
+ *  - PostgreSQL の接続文字列を環境変数から取得する。
+ *  - `POSTGRES_URL_NON_POOLING` を優先し、未設定なら `POSTGRES_URL`、
+ *  - それも未設定なら `DATABASE_URL` を参照する。
  */
 const getConnectionString = () =>
   process.env.POSTGRES_URL_NON_POOLING ??
@@ -36,11 +36,12 @@ const pool = new Pool({
  *
  * @function withClient
  * @template T
- * @param {(client: PoolClient) => Promise<T>} runner - DB クライアントを受け取り処理を実行する非同期関数
- * @returns {Promise<T>} `runner` が返す処理結果
- * @throws {Error} 接続文字列が未設定の場合
  * @description
- * 接続文字列を取得してクライアントを生成し、処理完了後は成功・失敗に関わらず必ず切断する。
+ *  - PostgreSQL クライアントの接続・切断を管理して処理を実行する。
+ *  - 接続文字列を取得してクライアントを生成し、処理完了後は成功・失敗に関わらず必ず切断する。
+ * @param runner - DB クライアントを受け取り処理を実行する非同期関数
+ * @returns `runner` が返す処理結果
+ * @throws {Error} 接続文字列が未設定の場合
  */
 async function withClient<T>(runner: (client: PoolClient) => Promise<T>) {
   const connectionString = getConnectionString();
@@ -60,10 +61,11 @@ async function withClient<T>(runner: (client: PoolClient) => Promise<T>) {
  * 作品テーブルが存在しない場合に作成する。
  *
  * @function ensureWorksTable
- * @param {PoolClient} client - 実行中の PostgreSQL クライアント
- * @returns {Promise<void>} テーブル作成処理の完了
  * @description
- * `works` テーブルと必要なカラム・制約を初期化する。
+ *  - 作品テーブルが存在しない場合に作成する。
+ *  - `works` テーブルと必要なカラム・制約を初期化する。
+ * @param client - 実行中の PostgreSQL クライアント
+ * @returns テーブル作成処理の完了
  */
 async function ensureWorksTable(client: PoolClient) {
   await client.query(`
@@ -83,13 +85,14 @@ async function ensureWorksTable(client: PoolClient) {
  * 新しい作品を作成して保存する。
  *
  * @function createWork
- * @param {{ title: string; status: WorkStatus; pages: string[] }} input - 作成する作品情報
- * @param {string} input.title - 作品タイトル
- * @param {WorkStatus} input.status - 作品ステータス（`draft` または `registered`）
- * @param {string[]} input.pages - 作品のページデータ一覧
- * @returns {Promise<WorkRow>} 作成された作品レコード
  * @description
- * 作品テーブルを確認後、UUID を採番して作品データを保存し、保存結果を返す。
+ *  - 新しい作品を作成して保存する。
+ *  - 作品テーブルを確認後、UUID を採番して作品データを保存し、保存結果を返す。
+ * @param input - 作成する作品情報
+ * @param input.title - 作品タイトル
+ * @param input.status - 作品ステータス（`draft` または `registered`）
+ * @param input.pages - 作品のページデータ一覧
+ * @returns 作成された作品レコード
  */
 export async function createWork(input: { title: string; status: WorkStatus; pages: string[] }) {
   return withClient(async (client) => {
@@ -111,8 +114,10 @@ export async function createWork(input: { title: string; status: WorkStatus; pag
  * 作品IDを指定して詳細を取得する。
  *
  * @function getWorkById
- * @param {string} id - 作品ID
- * @returns {Promise<WorkRow | null>} 対象作品。存在しない場合は `null`
+ * @description
+ *  - 作品IDを指定して詳細を取得する。
+ * @param id - 作品ID
+ * @returns 対象作品。存在しない場合は `null`
  */
 export async function getWorkById(id: string) {
   return withClient(async (client) => {
@@ -134,8 +139,10 @@ export async function getWorkById(id: string) {
  * 既存作品を更新する。
  *
  * @function updateWork
- * @param {{ id: string; title: string; status: WorkStatus; pages: string[] }} input - 更新対象と作品の基本内容
- * @returns {Promise<WorkRow | null>} 更新後の作品。存在しない場合は `null`
+ * @description
+ *  - 既存作品を更新する。
+ * @param input - 更新対象と作品の基本内容
+ * @returns 更新後の作品。存在しない場合は `null`
  */
 export async function updateWork(input: {
   id: string;
@@ -165,9 +172,11 @@ export async function updateWork(input: {
  * 作品の評価（採点）のみを更新する。
  *
  * @function updateEvaluation
- * @param {string} id - 作品ID
- * @param {string | null} evaluation - 評価内容（Markdownなど）
- * @returns {Promise<WorkRow | null>} 更新後の作品レコード
+ * @description
+ *  - 作品の評価（採点）のみを更新する。
+ * @param id - 作品ID
+ * @param evaluation - 評価内容（Markdownなど）
+ * @returns 更新後の作品レコード
  */
 export async function updateEvaluation(id: string, evaluation: string | null) {
   return withClient(async (client) => {
@@ -191,9 +200,9 @@ export async function updateEvaluation(id: string, evaluation: string | null) {
  * 作品一覧を取得する。
  *
  * @function listWorks
- * @returns {Promise<WorkRow[]>} 作品一覧（作成日の降順、最大50件）
  * @description
- * 作品テーブルを確認後、最新の作品データを取得して返す。
+ *  - 作品一覧を取得する。
+ *  - 作品テーブルを確認後、最新の作品データを取得して返す。
  */
 export async function listWorks() {
   return withClient(async (client) => {
@@ -212,8 +221,10 @@ export async function listWorks() {
  * 作品を削除する。
  *
  * @function deleteWork
- * @param {string} id - 削除対象の作品ID
- * @returns {Promise<void>} 削除処理の完了
+ * @description
+ *  - 作品を削除する。
+ * @param id - 削除対象の作品ID
+ * @returns 削除処理の完了
  */
 export async function deleteWork(id: string) {
   return withClient(async (client) => {

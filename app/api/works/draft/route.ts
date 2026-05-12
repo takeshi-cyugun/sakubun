@@ -5,6 +5,19 @@ type DraftRequestBody = {
   pages?: string[];
 };
 
+/**
+ * 作文を下書きとして新規作成する。
+ *
+ * @function POST
+ * @description
+ *  - 作文を下書きとして新規作成する。
+ *  - リクエストボディからタイトルとページ内容を取得し、下書きとして保存します。
+ *  - データベースにステータス `draft` で新しいレコードを挿入します。
+ *
+ * @param request - `title` と `pages` を含む JSON を期待します。
+ * @returns 保存された作品情報を含むレスポンス
+ * @throws {500} サーバーエラー（DB未設定や保存失敗など）
+ */
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as DraftRequestBody;
@@ -32,4 +45,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

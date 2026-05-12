@@ -3,12 +3,28 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * ログイン画面コンポーネント。
+ *
+ * @function LoginPage
+ * @description
+ *  - ログイン画面コンポーネント。
+ *  - アカウント名とパスワードによる簡易的な認証UIを提供する。
+ * @returns ログイン画面のJSX
+ */
 export default function LoginPage() {
   const router = useRouter();
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  /**
+   * @function handleSubmit
+   * @description
+   *  - フォームの送信処理。
+   *  - 入力されたアカウントとパスワードを照合し、成功した場合はトークンを保存してトップ画面へ遷移する。
+   * @param e - フォームイベント
+   */
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");

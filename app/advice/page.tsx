@@ -3,8 +3,11 @@ import React from 'react';
 import Link from 'next/link';
 
 /**
- * アドバイス画面コンポーネント。
- * 作文の書き方や原稿用紙の使い方のヒントを表示する。
+ * @function AdvicePage
+ * @description
+ *  - アドバイス画面コンポーネント。
+ *  - 作文の書き方や原稿用紙の使い方のヒントを表示する。
+ * @returns アドバイス画面のJSX
  */
 export default function AdvicePage() {
   const adviceList = [
